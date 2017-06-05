@@ -30,7 +30,7 @@
 
     },
     "variables": {
-        "_artifactsLocation": "https://raw.githubusercontent.com/AsraFatima/RoleAssignment/master/",
+        "_artifactsLocation": "https://raw.githubusercontent.com/AsraFatima/RoleAssignment/AsraTest/",
         "assignPermission": {
             "Resource Group": {
                 "assignPermissionUrl": "[concat(variables('_artifactsLocation'), 'ResourceGroupPerm', '.json')]",
