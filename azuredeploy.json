@@ -15,18 +15,41 @@
             "metadata": {
                 "description": "Specify the Application Id of the Service Principal."
             }
+        },
+        "AssignPermissionsTo": {
+            "type": "string",
+            "defaultValue": "Resource Group",
+            "allowedValues": [
+                "Resource Group",
+                "Subscription"
+            ],
+            "metadata": {
+                "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+            }
         }
 
     },
     "variables": {
         "_artifactsLocation": "https://raw.githubusercontent.com/AsraFatima/RoleAssignment/master/",
-        "VirtualMachineContributor": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "Contributor": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
-        "subscriptionScope": "[subscription().subscriptionId]",
-        "resourceGroupScope": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/',parameters('RoleResourceGroup'))]",
+        "assignPermission": {
+            "Resource Group": {
+                "assignPermissionUrl": "[concat(variables('_artifactsLocation'), 'ResourceGroupPerm', '.json')]",
+                "roleDefinition": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+                "scope": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/',parameters('RoleResourceGroup'))]"
+            },
+            "Subscription": {
+                "assignPermissionUrl": "[concat(variables('_artifactsLocation'), 'SubscriptionPerm', '.json')]",
+                "roleDefinition": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
+                "scope": "[subscription().subscriptionId]"
+            }
+        },
+        "currentPermission": "[variables('assignPermission')[parameters('AssignPermissionsTo')]]",
+
         "generateGuidTemplateUrl": "[concat(variables('_artifactsLocation'), 'NewGuid', '.json')]",
-        "ResourceGrouptemplateUrl": "[concat(variables('_artifactsLocation'), 'ResourceGroupPerm', '.json')]",
-        "SubscriptionTemplateUrl": "[concat(variables('_artifactsLocation'), 'SubscriptionPerm', '.json')]"
+        "TemplateUrl": "[variables('currentPermission').assignPermissionUrl]",
+        "roleDefinitionId": "[variables('currentPermission').roleDefinition]",
+        "templateScope": "[variables('currentPermission').scope]"
+
     },
     "resources": [
         {
@@ -52,18 +75,18 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[variables('ResourceGrouptemplateUrl')]",
+                    "uri": "[variables('TemplateUrl')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "roleDefinitionId": {
-                        "value": "[variables('VirtualMachineContributor')]"
+                        "value": "[variables('roleDefinitionId')]"
                     },
                     "principalId": {
                         "value": "[parameters('ApplicationId')]"
                     },
                     "scope": {
-                        "value": "[variables('resourceGroupScope')]"
+                        "value": "[variables('templateScope')]"
                     },
                     "roleAssignmentId": {
                         "value": "[reference('GenerateGuid').outputs.guid.value]"
@@ -73,37 +96,7 @@
                     }
                 }
             }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "type": "Microsoft.Resources/deployments",
-            "dependsOn": [
-                "Microsoft.Resources/deployments/GenerateGuid"
-            ],
-            "name": "AssignAccesstoSubscription",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('SubscriptionTemplateUrl')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "roleDefinitionId": {
-                        "value": "[variables('Contributor')]"
-                    },
-                    "principalId": {
-                        "value": "[parameters('ApplicationId')]"
-                    },
-                    "scope": {
-                        "value": "[variables('subscriptionScope')]"
-                    },
-                    "roleAssignmentId": {
-                        "value": "[reference('GenerateGuid').outputs.guid.value]"
-                    }
-                }
-            }
         }
     ],
-  "outputs": {
-  }
+  "outputs": {}
 }

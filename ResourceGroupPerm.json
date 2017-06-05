@@ -30,8 +30,8 @@
             }
         },
         "ResourceGroup": {
-            "type": "array",
-            "defaultValue": [],
+            "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "Resource Groups."
             }

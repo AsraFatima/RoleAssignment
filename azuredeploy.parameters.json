@@ -3,6 +3,7 @@
   "contentVersion": "1.0.0.0",
     "parameters": {
         "RoleResourceGroup": { "value": "ExistingResourceGroupName" },
-        "ApplicationId": { "value": "59fdc4a1-50bc-47aa-9a46-0b8c5a158258" }
+        "ApplicationId": { "value": "59fdc4a1-50bc-47aa-9a46-0b8c5a158258" },
+        "AssignPermissionsTo":{"value": "Resource Group"}
     }
 }
