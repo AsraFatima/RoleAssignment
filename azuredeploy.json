@@ -90,9 +90,6 @@
                     },
                     "roleAssignmentId": {
                         "value": "[reference('GenerateGuid').outputs.guid.value]"
-                    },
-                    "ResourceGroup": {
-                        "value": "[parameters('RoleResourceGroup')]"
                     }
                 }
             }

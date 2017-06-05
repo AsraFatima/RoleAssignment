@@ -28,13 +28,6 @@
             "metaData": {
                 "description": "RoleAssignment Id for the Service Principal."
             }
-        },
-        "ResourceGroup": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Resource Groups."
-            }
         }
     },
     "variables": {
