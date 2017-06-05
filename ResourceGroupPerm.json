@@ -31,15 +31,13 @@
         },
         "ResourceGroup": {
             "type": "string",
-            "defaultValue": "",
+            "defaultValue": [],
             "metadata": {
                 "description": "Resource Groups."
             }
         }
     },
-    "variables": {
-        "roleScope": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/',parameters('ResourceGroup')[1])]"
-    },
+    "variables": { },
     "resources": [
         {
             "apiVersion": "2014-07-01-preview",

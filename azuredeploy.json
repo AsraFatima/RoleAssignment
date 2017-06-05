@@ -71,7 +71,7 @@
             "dependsOn": [
                 "Microsoft.Resources/deployments/GenerateGuid"
             ],
-            "name": "AssignAccesstoResourceGroup",
+            "name": "AssignPermissions",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
