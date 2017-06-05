@@ -1,0 +1,56 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "roleDefinitionId": {
+            "type": "string",
+            "metadata": {
+                "Description": "Specifies the name of the Virtual Network used for virtual machine disks. This has to be a unique name, up to 24 chars, all lowercase."
+            }
+        },
+        "principalId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Specifies the Location for the deployment."
+            }
+        },
+        "scope": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Specifies the Location for the deployment."
+            }
+        },
+        "roleAssignmentId": {
+            "type": "string",
+            "defaultValue": "",
+            "metaData": {
+                "description": "RoleAssignment Id for the Service Principal."
+            }
+        },
+        "ResourceGroup": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Resource Groups."
+            }
+        }
+    },
+    "variables": {
+        "roleScope": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/',parameters('ResourceGroup')[1])]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2014-07-01-preview",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "name": "[parameters('roleAssignmentId')]",           
+            "properties": {
+                "roleDefinitionId": "[parameters('roleDefinitionId')]",
+                "principalId": "[parameters('principalId')]",
+                "scope": "[parameters('scope')]"
+            }
+        }
+    ],
+    "outputs": { }
+}

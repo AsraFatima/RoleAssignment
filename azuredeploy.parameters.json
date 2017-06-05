@@ -1,6 +1,8 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {
-  }
+    "parameters": {
+        "RoleResourceGroup": { "value": "ExistingResourceGroupName" },
+        "ApplicationId": { "value": "59fdc4a1-50bc-47aa-9a46-0b8c5a158258" }
+    }
 }
