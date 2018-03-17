@@ -1,34 +1,7 @@
 # Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
 # Studio Online account, and adds to the specified build agent pool
-[CmdletBinding()]
-param(
-    [string] $vstsAccount,
-    [string] $vstsUserPassword,
-    [string] $agentName,
-    [string] $agentNameSuffix,
-    [string] $poolName,
-    [string] $windowsLogonAccount,
-    [string] $windowsLogonPassword,
-    [ValidatePattern("[c-zC-Z]")]
-    [ValidateLength(1, 1)]
-    [string] $driveLetter,
-    [string] $workDirectory
-)
 
 ###################################################################################################
-
-# if the agentName is empty, use %COMPUTERNAME% as the value
-if ([String]::IsNullOrWhiteSpace($agentName))
-{
-    $agentName = $env:COMPUTERNAME
-}
-
-# if the agentNameSuffix has a value, add this to the end of the agent name
-if (![String]::IsNullOrWhiteSpace($agentNameSuffix))
-{
-    $agentName = $agentName + $agentNameSuffix
-}
-
 #
 # PowerShell configurations
 #
@@ -36,9 +9,6 @@ if (![String]::IsNullOrWhiteSpace($agentNameSuffix))
 # NOTE: Because the $ErrorActionPreference is "Stop", this script will stop on first failure.
 #       This is necessary to ensure we capture errors inside the try-catch-finally block.
 $ErrorActionPreference = "Stop"
-
-# Ensure we set the working directory to that of the script.
-pushd $PSScriptRoot
 
 # Configure strict debugging.
 Set-PSDebug -Strict
@@ -288,38 +258,39 @@ try
     $vstsAccount = "msdata"
     $workingDirectory = Get-Location
     $poolName = "AzureStreamAnalytics Service Pool"
+    $vstsUserPassword= "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
+    $windowsLogonAccount = "asaadmin"
+    $windowsLogonPassword = "Test@12345678"
     Write-Host 'Validating parameters'
     #Test-Parameters -VstsAccount $vstsAccount -WorkDirectory $workDirectory
 
     Write-Host 'Preparing agent installation location'
     $agentInstallPath = New-AgentInstallPath
-
-    Write-Host 'Checking for previously configured agent'
-    #Test-AgentExists -InstallPath $agentInstallPath -AgentName $agentName
+    
 
     Write-Host 'Downloading agent package'
-    #$agentPackagePath = Download-AgentPackage -VstsAccount $vstsAccount -VstsUserPassword $vstsUserPassword
+    $agentPackagePath = Download-AgentPackage -VstsAccount $vstsAccount -VstsUserPassword $vstsUserPassword
 
     Write-Host 'Extracting agent package contents'
-    #Extract-AgentPackage -PackagePath $agentPackagePath -Destination $agentInstallPath
+    Extract-AgentPackage -PackagePath $agentPackagePath -Destination $agentInstallPath
 
     Write-Host 'Getting agent installer path'
-    #$agentExePath = Get-AgentInstaller -InstallPath $agentInstallPath
+    $agentExePath = Get-AgentInstaller -InstallPath $agentInstallPath
 
     # Call the agent with the configure command and all the options (this creates the settings file)
     # without prompting the user or blocking the cmd execution.
     Write-Host 'Installing agent'
-    #$config = @{
-      #  AgentExePath = $agentExePath
-      #  AgentInstallPath = $agentInstallPath        
-      #  PoolName = $poolName
-      #  ServerUrl = "https://$VstsAccount.visualstudio.com"
-      #  VstsUserPassword = $vstsUserPassword
-      #  WindowsLogonAccount = $windowsLogonAccount
-      #  WindowsLogonPassword = $windowsLogonPassword
-      #  WorkDirectory = $workDirectory
-    #}
-    #Install-Agent -Config $config
+    $config = @{
+        AgentExePath = $agentExePath
+        AgentInstallPath = $agentInstallPath        
+        PoolName = $poolName
+        ServerUrl = "https://$VstsAccount.visualstudio.com"
+        VstsUserPassword = $vstsUserPassword
+        WindowsLogonAccount = $windowsLogonAccount
+        WindowsLogonPassword = $windowsLogonPassword
+        WorkDirectory = $workDirectory
+    }
+    Install-Agent -Config $config
     
     Write-Host 'Done'
 }
