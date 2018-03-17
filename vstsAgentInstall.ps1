@@ -255,7 +255,7 @@ trap
 
 try
 {
-    $vstsAccount = "msdata"
+    $VstsAccount = "msdata"
     $workingDirectory = Get-Location
     $poolName = "AzureStreamAnalytics Service Pool"
     $vstsUserPassword= "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
