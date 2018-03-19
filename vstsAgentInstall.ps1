@@ -98,7 +98,7 @@ function Download-AgentPackage
     )
     
     # Create a temporary directory where to download from VSTS the agent package (agent.zip).
-    $agentTempFolderName = Join-Path $env:temp ([System.IO.Path]::GetRandomFileName())
+    #$agentTempFolderName = Join-Path $env:temp ([System.IO.Path]::GetRandomFileName())
     New-Item -ItemType Directory -Force -Path $agentTempFolderName | Out-Null
 
     $agentPackagePath = "$agentTempFolderName\agent.zip"
@@ -145,11 +145,6 @@ function Download-AgentPackage
 
 function New-AgentInstallPath
 {
-    #[CmdletBinding()]
-    #param(
-    #    [string] $DriveLetter,
-      #  [string] $AgentName
-   # )
     md \agent
     cd \agent
     $agentInstallDir = Get-Location
@@ -258,22 +253,17 @@ try
     $vstsAccount = "msdata"
     $workingDirectory = Get-Location
     $poolName = "AzureStreamAnalytics Service Pool"
-    Write-Host 'Validating parameters'
-    #Test-Parameters -VstsAccount $vstsAccount -WorkDirectory $workDirectory
-
+    
     Write-Host 'Preparing agent installation location'
     $agentInstallPath = New-AgentInstallPath
 
-    Write-Host 'Checking for previously configured agent'
-    #Test-AgentExists -InstallPath $agentInstallPath -AgentName $agentName
-
-    $vstsTokenSecret = Get-AzureKeyVaultSecret -VaultName "ASABuildAgentLab765d6648" -Name "VSTS-sqlbld0"
-    $vstsPAT = $vstsTokenSecret.SecretValueText
-    $vstsBasicToken = [convert]::ToBase64String([text.encoding]::ASCII.GetBytes(":" + $vstsPAT))
-    $vstsAuthHeader = @{ Authorization = "Basic $vstsBasicToken"} 
+    #$vstsTokenSecret = Get-AzureKeyVaultSecret -VaultName "ASABuildAgentLab765d6648" -Name "VSTS-sqlbld0"
+    #$vstsPAT = $vstsTokenSecret.SecretValueText
+    #$vstsBasicToken = [convert]::ToBase64String([text.encoding]::ASCII.GetBytes(":" + $vstsPAT))
+    #$vstsAuthHeader = @{ Authorization = "Basic $vstsBasicToken"} 
 
     Write-Host 'Downloading agent package'
-    $agentPackagePath = Download-AgentPackage -VstsAccount $vstsAccount -VstsUserPassword $vstsPAT
+    #$agentPackagePath = Download-AgentPackage -VstsAccount $vstsAccount -VstsUserPassword $vstsPAT
 
     Write-Host 'Extracting agent package contents'
     #Extract-AgentPackage -PackagePath $agentPackagePath -Destination $agentInstallPath
