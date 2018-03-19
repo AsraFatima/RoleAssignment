@@ -98,7 +98,8 @@ function Download-AgentPackage
     )
     
     # Create a temporary directory where to download from VSTS the agent package (agent.zip).
-    #$agentTempFolderName = Join-Path $env:temp ([System.IO.Path]::GetRandomFileName())
+    $agentTempFolderName = Join-Path $env:temp ([System.IO.Path]::GetRandomFileName())
+    
     New-Item -ItemType Directory -Force -Path $agentTempFolderName | Out-Null
 
     $agentPackagePath = "$agentTempFolderName\agent.zip"
@@ -112,18 +113,7 @@ function Download-AgentPackage
     {
         try
         {
-            $basicAuth = ("{0}:{1}" -f $vstsUser, $vstsUserPassword) 
-            $basicAuth = [System.Text.Encoding]::UTF8.GetBytes($basicAuth)
-            $basicAuth = [System.Convert]::ToBase64String($basicAuth)
-            $headers = @{ Authorization = ("Basic {0}" -f $basicAuth) }
-
-            $agentList = Invoke-RestMethod -Uri $vstsAgentUrl -Headers $headers -Method Get -ContentType application/json
-            $agent = $agentList.value
-            if ($agent -is [Array])
-            {
-                $agent = $agentList.value[0]
-            }
-            Invoke-WebRequest -Uri $agent.downloadUrl -Headers $headers -Method Get -OutFile "$agentPackagePath" | Out-Null
+            
             break
         }
         catch
@@ -145,18 +135,20 @@ function Download-AgentPackage
 
 function New-AgentInstallPath
 {
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     md \agent
     cd \agent
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
     
-    # Construct the agent folder under the specified drive.
-    #$agentInstallDir = $DriveLetter + ":"
+    # Construct the agent folder under the specified drive.    
     try
     {
         # Create the directory for this agent.
         $agentInstallPath = Join-Path -Path $agentInstallDir -ChildPath "\vstsAgent.zip"
         New-Item -ItemType Directory -Force -Path $agentInstallPath | Out-Null
+        Invoke-WebRequest "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip" -OutFile "\vstsagent.zip" -UseBasicParsing
+        Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("\vstsagent.zip", $agentInstallDir)
     }
     catch
     {
@@ -258,7 +250,7 @@ try
     $agentInstallPath = New-AgentInstallPath
 
     #$vstsTokenSecret = Get-AzureKeyVaultSecret -VaultName "ASABuildAgentLab765d6648" -Name "VSTS-sqlbld0"
-    #$vstsPAT = $vstsTokenSecret.SecretValueText
+    $vstsPAT = 2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra
     #$vstsBasicToken = [convert]::ToBase64String([text.encoding]::ASCII.GetBytes(":" + $vstsPAT))
     #$vstsAuthHeader = @{ Authorization = "Basic $vstsBasicToken"} 
 
