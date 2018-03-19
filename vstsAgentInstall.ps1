@@ -1,34 +1,7 @@
 # Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
 # Studio Online account, and adds to the specified build agent pool
-[CmdletBinding()]
-param(
-    [string] $vstsAccount,
-    [string] $vstsUserPassword,
-    [string] $agentName,
-    [string] $agentNameSuffix,
-    [string] $poolName,
-    [string] $windowsLogonAccount,
-    [string] $windowsLogonPassword,
-    [ValidatePattern("[c-zC-Z]")]
-    [ValidateLength(1, 1)]
-    [string] $driveLetter,
-    [string] $workDirectory
-)
 
 ###################################################################################################
-
-# if the agentName is empty, use %COMPUTERNAME% as the value
-if ([String]::IsNullOrWhiteSpace($agentName))
-{
-    $agentName = $env:COMPUTERNAME
-}
-
-# if the agentNameSuffix has a value, add this to the end of the agent name
-if (![String]::IsNullOrWhiteSpace($agentNameSuffix))
-{
-    $agentName = $agentName + $agentNameSuffix
-}
-
 #
 # PowerShell configurations
 #
