@@ -10,9 +10,6 @@
 #       This is necessary to ensure we capture errors inside the try-catch-finally block.
 $ErrorActionPreference = "Stop"
 
-# Ensure we set the working directory to that of the script.
-pushd $PSScriptRoot
-
 # Configure strict debugging.
 Set-PSDebug -Strict
 
