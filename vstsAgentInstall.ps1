@@ -37,8 +37,8 @@ function Handle-LastError
 function New-AgentInstallPath
 {
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-    md \agent
-    cd \agent
+    md \agent1
+    cd \agent1
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
     $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"
@@ -91,20 +91,8 @@ function Install-Agent
         pushd -Path $Config.AgentInstallPath
 
         # The actual install of the agent. Using --runasservice, and some other values that could be turned into paramenters if needed.
-        $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT","--token", "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra", "--pool", $Config.PoolName, "--agent", "--runasservice"
-        if (-not [string]::IsNullOrWhiteSpace($Config.WindowsLogonPassword))
-        {
-            $agentConfigArgs += "--windowslogonpassword", $Config.WindowsLogonPassword
-        }
-        if (-not [string]::IsNullOrWhiteSpace($Config.WorkDirectory))
-        {
-            $agentConfigArgs += "--work", $Config.WorkDirectory
-        }
-        & $Config.AgentExePath $agentConfigArgs
-        if ($LASTEXITCODE -ne 0)
-        {
-            Write-Error "Agent configuration failed with exit code: $LASTEXITCODE"
-        }
+        $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT","--token", $Config.VstsUserPassword, "--pool", $Config.PoolName, "--runasservice"        
+        '.\config.cmd' $agentConfigArgs
     }
     finally
     {
@@ -142,6 +130,7 @@ try
    
     $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
     $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
+    $
     $workDirectory = "_work"   
 
     Write-Host 'Getting agent installer path'
@@ -155,7 +144,7 @@ try
        AgentInstallPath = $agentInstallPath        
        PoolName = $poolName
        ServerUrl = "https://$VstsAccount.visualstudio.com"
-       VstsUserPassword = $vstsUserPassword
+       VstsUserPassword = $vstsPAT
        WindowsLogonAccount = $windowsLogonAccount 
         WorkDirectory = $workDirectory     
     }
