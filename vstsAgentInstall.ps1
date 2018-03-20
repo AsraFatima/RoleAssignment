@@ -45,8 +45,7 @@ function New-AgentInstallPath
     cd \agent
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
-    $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"
-    $agentDir =   Join-Path -Path $agentInstallDir -ChildPath "VSTSInstaller"
+    $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"=    $agentDir =   Join-Path -Path $agentInstallDir -ChildPath "VSTSInstaller"
     New-Item -ItemType Directory -Force -Path $agentDir | Out-Null
     # Construct the agent folder under the specified drive.    
     try
@@ -95,7 +94,7 @@ function Install-Agent
         cd \agent
         $currenDir = Get-location
         $agentInstallerDir = "VSTSAgent"
-        $agentInstallerPath - Join-path -Path $currenDir -ChildPath $agentInstallDir
+        $agentInstallerPath = Join-path -Path $currenDir -ChildPath $agentInstallDir
          Write-Host 'Set the current directory to the agent dedicated one previously created.'
         # Set the current directory to the agent dedicated one previously created.
         pushd -Path $agentInstallerPath
