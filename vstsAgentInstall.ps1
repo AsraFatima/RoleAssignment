@@ -130,7 +130,7 @@ try
    
     $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
     $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
-    $
+    
     $workDirectory = "_work"   
 
     Write-Host 'Getting agent installer path'
