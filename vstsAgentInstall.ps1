@@ -92,7 +92,7 @@ function Install-Agent
 
         # The actual install of the agent. Using --runasservice, and some other values that could be turned into paramenters if needed.
         $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT","--token", $Config.VstsUserPassword, "--pool", $Config.PoolName, "--runasservice"        
-        '.\config.cmd' $agentConfigArgs
+        .\config.cmd $agentConfigArgs
     }
     finally
     {
