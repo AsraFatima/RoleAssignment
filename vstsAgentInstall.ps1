@@ -140,7 +140,7 @@ try
     $config = @{
        AgentExePath = $agentExePath
        AgentInstallPath = $agentInstallPath        
-       PoolName = $poolName
+       PoolName = $PoolName
        ServerUrl = "https://$VstsAccount.visualstudio.com"
        VstsUserPassword = $VstsUserPassword 
        WindowsLogonAccount = $windowsLogonAccount 
