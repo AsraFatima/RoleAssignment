@@ -37,8 +37,8 @@ function Handle-LastError
 function New-AgentInstallPath
 {
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-    md \agent1
-    cd \agent1
+    md \agent
+    cd \agent
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
     $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"
