@@ -34,105 +34,6 @@ function Handle-LastError
     exit -1
 }
 
-function Test-Parameters
-{
-    [CmdletBinding()]
-    param(
-        [string] $VstsAccount,
-        [string] $WorkDirectory
-    )
-    
-    if ($VstsAccount -match "https*://" -or $VstsAccount -match "visualstudio.com")
-    {
-        Write-Error "VSTS account '$VstsAccount' should not be the URL, just the account name."
-    }
-
-    if (![string]::IsNullOrWhiteSpace($WorkDirectory) -and !(Test-ValidPath -Path $WorkDirectory))
-    {
-        Write-Error "Work directory '$WorkDirectory' is not a valid path."
-    }
-}
-
-function Test-ValidPath
-{
-    param(
-        [string] $Path
-    )
-    
-    $isValid = Test-Path -Path $Path -IsValid -PathType Container
-    
-    try
-    {
-        [IO.Path]::GetFullPath($Path) | Out-Null
-    }
-    catch
-    {
-        $isValid = $false
-    }
-    
-    return $isValid
-}
-
-function Test-AgentExists
-{
-    [CmdletBinding()]
-    param(
-        [string] $InstallPath,
-        [string] $AgentName
-    )
-
-    $agentConfigFile = Join-Path $InstallPath '.agent'
-
-    if (Test-Path $agentConfigFile)
-    {
-        Write-Error "Agent $AgentName is already configured in this machine"
-    }
-}
-
-function Download-AgentPackage
-{
-    [CmdletBinding()]
-    param(
-        [string] $VstsAccount,
-        [string] $VstsUserPassword
-    )
-    
-    # Create a temporary directory where to download from VSTS the agent package (agent.zip).
-    $agentTempFolderName = Join-Path $env:temp ([System.IO.Path]::GetRandomFileName())
-    
-    New-Item -ItemType Directory -Force -Path $agentTempFolderName | Out-Null
-
-    $agentPackagePath = "$agentTempFolderName\agent.zip"
-    $serverUrl = "https://$VstsAccount.visualstudio.com"
-    $vstsAgentUrl = "$serverUrl/_apis/distributedtask/packages/agent/win7-x64?`$top=1&api-version=3.0"
-    $vstsUser = "AzureDevTestLabs"
-
-    $maxRetries = 3
-    $retries = 0
-    do
-    {
-        try
-        {
-            
-            break
-        }
-        catch
-        {
-            $exceptionText = ($_ | Out-String).Trim()
-                
-            if (++$retries -gt $maxRetries)
-            {
-                Write-Error "Failed to download agent due to $exceptionText"
-            }
-            
-            Start-Sleep -Seconds 1 
-        }
-    }
-    while ($retries -le $maxRetries)
-
-    return $agentPackagePath
-}
-
 function New-AgentInstallPath
 {
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
@@ -140,6 +41,7 @@ function New-AgentInstallPath
     cd \agent
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
+    $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"
     
     # Construct the agent folder under the specified drive.    
     try
@@ -147,7 +49,7 @@ function New-AgentInstallPath
         # Create the directory for this agent.
         $agentInstallPath = Join-Path -Path $agentInstallDir -ChildPath "\vstsAgent.zip"
         New-Item -ItemType Directory -Force -Path $agentInstallPath | Out-Null
-        Invoke-WebRequest "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip" -OutFile "\vstsagent.zip" -UseBasicParsing
+        Invoke-WebRequest $agentUrl -OutFile "\vstsagent.zip" -UseBasicParsing
         Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("\vstsagent.zip", $agentInstallDir)
     }
     catch
@@ -156,7 +58,7 @@ function New-AgentInstallPath
         Write-Error "Failed to create the agent directory at $installPathDir."
     }
     
-    return $agentInstallPath
+    return $agentInstallDir
 }
 
 function Get-AgentInstaller
@@ -175,18 +77,6 @@ function Get-AgentInstaller
     return $agentExePath
 }
 
-function Extract-AgentPackage
-{
-    [CmdletBinding()]
-    param(
-        [string] $PackagePath,
-        [string] $Destination
-    )
-  
-    Add-Type -AssemblyName System.IO.Compression.FileSystem 
-    [System.IO.Compression.ZipFile]::ExtractToDirectory("$PackagePath", "$Destination")
-    
-}
 
 function Install-Agent
 {
@@ -200,7 +90,7 @@ function Install-Agent
         pushd -Path $Config.AgentInstallPath
 
         # The actual install of the agent. Using --runasservice, and some other values that could be turned into paramenters if needed.
-        $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT", "--token", $Config.VstsUserPassword, "--pool", $Config.PoolName, "--agent", $Config.AgentName, "--runasservice", "--windowslogonaccount", $Config.WindowsLogonAccount
+        $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT", "--pool", $Config.PoolName, "--agent", "--runasservice"
         if (-not [string]::IsNullOrWhiteSpace($Config.WindowsLogonPassword))
         {
             $agentConfigArgs += "--windowslogonpassword", $Config.WindowsLogonPassword
@@ -250,33 +140,26 @@ try
     $agentInstallPath = New-AgentInstallPath
 
     #$vstsTokenSecret = Get-AzureKeyVaultSecret -VaultName "ASABuildAgentLab765d6648" -Name "VSTS-sqlbld0"
-    $vstsPAT = 2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra
-    #$vstsBasicToken = [convert]::ToBase64String([text.encoding]::ASCII.GetBytes(":" + $vstsPAT))
-    #$vstsAuthHeader = @{ Authorization = "Basic $vstsBasicToken"} 
-
-    Write-Host 'Downloading agent package'
-    #$agentPackagePath = Download-AgentPackage -VstsAccount $vstsAccount -VstsUserPassword $vstsPAT
-
-    Write-Host 'Extracting agent package contents'
-    #Extract-AgentPackage -PackagePath $agentPackagePath -Destination $agentInstallPath
+    $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
+    $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
+    $workDirectory = "_work"   
 
     Write-Host 'Getting agent installer path'
-    #$agentExePath = Get-AgentInstaller -InstallPath $agentInstallPath
+    $agentExePath = Get-AgentInstaller -InstallPath $agentInstallPath
 
     # Call the agent with the configure command and all the options (this creates the settings file)
     # without prompting the user or blocking the cmd execution.
     Write-Host 'Installing agent'
-    #$config = @{
-      #  AgentExePath = $agentExePath
-      #  AgentInstallPath = $agentInstallPath        
-      #  PoolName = $poolName
-      #  ServerUrl = "https://$VstsAccount.visualstudio.com"
-      #  VstsUserPassword = $vstsUserPassword
-      #  WindowsLogonAccount = $windowsLogonAccount
-      #  WindowsLogonPassword = $windowsLogonPassword
-      #  WorkDirectory = $workDirectory
-    #}
-    #Install-Agent -Config $config
+    $config = @{
+        AgentExePath = $agentExePath
+       AgentInstallPath = $agentInstallPath        
+       PoolName = $poolName
+       ServerUrl = "https://$VstsAccount.visualstudio.com"
+       VstsUserPassword = $vstsUserPassword
+       WindowsLogonAccount = $windowsLogonAccount 
+        WorkDirectory = $workDirectory     
+    }
+    Install-Agent -Config $config
     
     Write-Host 'Done'
 }
@@ -284,13 +167,3 @@ finally
 {
     popd
 }
-
-#[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-#md \agent;
-#cd \agent;
-#$cwd = Get-Location;
-#md \vstsagent.zip
-
-#$destinationFolder = $cwd+"\vstsagent.zip"
-#Invoke-WebRequest "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip" -OutFile "\vstsagent.zip" -UseBasicParsing
-#Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory($agent, "$cwd")
