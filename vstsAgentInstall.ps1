@@ -90,7 +90,7 @@ function Install-Agent
         pushd -Path $Config.AgentInstallPath
 
         # The actual install of the agent. Using --runasservice, and some other values that could be turned into paramenters if needed.
-        $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT", "--pool", $Config.PoolName, "--agent", "--runasservice"
+        $agentConfigArgs = "--unattended", "--url", $Config.ServerUrl, "--auth", "PAT","--token", "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra", "--pool", $Config.PoolName, "--agent", "--runasservice"
         if (-not [string]::IsNullOrWhiteSpace($Config.WindowsLogonPassword))
         {
             $agentConfigArgs += "--windowslogonpassword", $Config.WindowsLogonPassword
@@ -132,14 +132,13 @@ trap
 
 try
 {
-    $vstsAccount = "msdata"
+    $VstsAccount = "msdata"
     $workingDirectory = Get-Location
     $poolName = "AzureStreamAnalytics Service Pool"
     
     Write-Host 'Preparing agent installation location'
     $agentInstallPath = New-AgentInstallPath
-
-    #$vstsTokenSecret = Get-AzureKeyVaultSecret -VaultName "ASABuildAgentLab765d6648" -Name "VSTS-sqlbld0"
+    $agentInstallPath = Join-Path -Path $agentInstallPath -ChildPath "VSTSInstaller"   
     $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
     $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
     $workDirectory = "_work"   
