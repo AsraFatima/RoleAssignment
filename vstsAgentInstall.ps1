@@ -138,7 +138,9 @@ try
     
     Write-Host 'Preparing agent installation location'
     $agentInstallPath = New-AgentInstallPath
-    $agentInstallPath = Join-Path -Path $agentInstallPath -ChildPath "VSTSInstaller"   
+    $agentInstallPath = Join-Path -Path $agentInstallPath -ChildPath "VSTSInstaller" 
+    New-Item -ItemType Directory -Force -Path $agentInstallPath | Out-Null
+    
     $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
     $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
     $workDirectory = "_work"   
