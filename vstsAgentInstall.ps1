@@ -1,7 +1,5 @@
 # Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
 # Studio Online account, and adds to the specified build agent pool
-# Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
-# Studio Online account, and adds to the specified build agent pool
 [CmdletBinding()]
 param(
     [string] $VstsAccount,
