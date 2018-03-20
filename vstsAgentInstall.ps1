@@ -1,5 +1,13 @@
 # Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
 # Studio Online account, and adds to the specified build agent pool
+# Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
+# Studio Online account, and adds to the specified build agent pool
+[CmdletBinding()]
+param(
+    [string] $VstsAccount,
+    [string] $VstsUserPassword,
+    [string] $PoolName,
+)
 
 ###################################################################################################
 #
@@ -17,10 +25,6 @@ Set-PSDebug -Strict
 
 function Handle-LastError
 {
-    [CmdletBinding()]
-    param(
-    )
-
     $message = $error[0].Exception.Message
     if ($message)
     {
@@ -120,33 +124,27 @@ trap
 #
 
 try
-{
-    $VstsAccount = "msdata"
-    $workingDirectory = Get-Location
-    $poolName = "AzureStreamAnalytics Service Pool"
-    
+{     
     Write-Host 'Preparing agent installation location'
-    $agentInstallPath = New-AgentInstallPath   
-   
-    $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
-    $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
-    
+    $agentInstallPath = New-AgentInstallPath    
+
+    $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"    
     $workDirectory = "_work"   
 
     Write-Host 'Getting agent installer path'
-    $agentExePath = Get-AgentInstaller -InstallPath $agentInstallPath
-
+    $agentExePath = [System.IO.Path]::Combine($agentInstallPath, 'config.cmd')
+   
     # Call the agent with the configure command and all the options (this creates the settings file)
     # without prompting the user or blocking the cmd execution.
     Write-Host 'Installing agent'
     $config = @{
-        AgentExePath = $agentExePath
+       AgentExePath = $agentExePath
        AgentInstallPath = $agentInstallPath        
        PoolName = $poolName
        ServerUrl = "https://$VstsAccount.visualstudio.com"
-       VstsUserPassword = $vstsPAT
+       VstsUserPassword = $VstsUserPassword 
        WindowsLogonAccount = $windowsLogonAccount 
-        WorkDirectory = $workDirectory     
+       WorkDirectory = $workDirectory     
     }
     Install-Agent -Config $config
     
