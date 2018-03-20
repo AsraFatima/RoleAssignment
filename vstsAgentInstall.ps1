@@ -42,7 +42,8 @@ function New-AgentInstallPath
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
     $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"
-    
+    $agentDir =   Join-Path -Path $agentInstallDir -ChildPath "VSTSInstaller"
+    New-Item -ItemType Directory -Force -Path $agentDir | Out-Null
     # Construct the agent folder under the specified drive.    
     try
     {
@@ -50,7 +51,7 @@ function New-AgentInstallPath
         $agentInstallPath = Join-Path -Path $agentInstallDir -ChildPath "\vstsAgent.zip"
         New-Item -ItemType Directory -Force -Path $agentInstallPath | Out-Null
         Invoke-WebRequest $agentUrl -OutFile "\vstsagent.zip" -UseBasicParsing
-        Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("\vstsagent.zip", $agentInstallDir)
+        Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("\vstsagent.zip", $agentDir)
     }
     catch
     {
@@ -58,7 +59,7 @@ function New-AgentInstallPath
         Write-Error "Failed to create the agent directory at $installPathDir."
     }
     
-    return $agentInstallDir
+    return $agentDir
 }
 
 function Get-AgentInstaller
@@ -137,10 +138,8 @@ try
     $poolName = "AzureStreamAnalytics Service Pool"
     
     Write-Host 'Preparing agent installation location'
-    $agentInstallPath = New-AgentInstallPath
-    $agentInstallPath = Join-Path -Path $agentInstallPath -ChildPath "VSTSInstaller" 
-    New-Item -ItemType Directory -Force -Path $agentInstallPath | Out-Null
-    
+    $agentInstallPath = New-AgentInstallPath   
+   
     $vstsPAT = "2l2gar3fypbd5x5y33frvy6uehcqi4psj5s446kydgqbdk5ragra"
     $windowsLogonAccount= "NT AUTHORITY\NETWORK SERVICE"
     $workDirectory = "_work"   
