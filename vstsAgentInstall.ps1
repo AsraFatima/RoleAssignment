@@ -1,7 +1,5 @@
 # Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
 # Studio Online account, and adds to the specified build agent pool
-# Downloads the Visual Studio Online Build Agent, installs on the new machine, registers with the Visual
-# Studio Online account, and adds to the specified build agent pool
 [CmdletBinding()]
 param(
     [string] $VstsAccount,
@@ -45,7 +43,8 @@ function New-AgentInstallPath
     cd \agent
     $agentInstallDir = Get-Location
     [string] $agentInstallPath = $null
-    $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"=    $agentDir =   Join-Path -Path $agentInstallDir -ChildPath "VSTSInstaller"
+    $agentUrl = "https://github.com/Microsoft/vsts-agent/releases/download/v2.124.0/vsts-agent-win7-x64-2.124.0.zip"
+    $agentDir =   Join-Path -Path $agentInstallDir -ChildPath "VSTSInstaller"
     New-Item -ItemType Directory -Force -Path $agentDir | Out-Null
     # Construct the agent folder under the specified drive.    
     try
@@ -91,13 +90,9 @@ function Install-Agent
 
     try
     {
-        cd \agent
-        $currenDir = Get-location
-        $agentInstallerDir = "VSTSAgent"
-        $agentInstallerPath = Join-path -Path $currenDir -ChildPath $agentInstallDir
-         Write-Host 'Set the current directory to the agent dedicated one previously created.'
+        Write-Host 'Set the current directory to the agent dedicated one previously created.'
         # Set the current directory to the agent dedicated one previously created.
-        pushd -Path $agentInstallerPath
+        pushd -Path $Config.AgentInstallPath
 
         Write-Host 'Create a parameter for the Config.cmd'
         # The actual install of the agent. Using --runasservice, and some other values that could be turned into paramenters if needed.
@@ -138,13 +133,14 @@ try
     $workDirectory = "_work"   
 
     Write-Host 'Getting agent installer path'
-    $agentExePath = [System.IO.Path]::Combine($agentInstallPath, 'config.cmd')
+    $agentExePath = Get-AgentInstaller -InstallPath $agentInstallPath
    
     # Call the agent with the configure command and all the options (this creates the settings file)
     # without prompting the user or blocking the cmd execution.
     Write-Host 'Installing agent'
     $config = @{
-       AgentExePath = $agentExePath          
+       AgentExePath = $agentExePath 
+	   AgentInstallPath = $agentInstallPath
        PoolName = $PoolName
        ServerUrl = "https://$VstsAccount.visualstudio.com"
        VstsUserPassword = $VstsUserPassword 
